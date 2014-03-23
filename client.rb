@@ -14,5 +14,9 @@ puts "Bio: #{member.bio}"
 board = Trello::Board.find(BOARD_ID)
 
 board.actions.each do |action|
-	puts "id: #{action.id}, type: #{action.type}"
+	if action.type == "updateCard"
+		if action.data["listAfter"].present?
+			puts "#{action.date} - #{action.data["listBefore"]["name"]} -> #{action.data["listAfter"]["name"]}"
+		end
+	end
 end
