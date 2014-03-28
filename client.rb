@@ -13,8 +13,16 @@ puts "Bio: #{member.bio}"
 
 board = Trello::Board.find(BOARD_ID)
 
-board.actions.each do |action|
+actions = Hash.new
+
+board.actions.reverse_each do |action|
 	if action.type == "updateCard" && action.data["listAfter"].present? && (action.data["listBefore"]["name"] == "Doing" || action.data["listAfter"]["name"] == "Doing")
-		puts "#{action.date} - id: #{action.data["card"]["id"]}, #{action.data["listBefore"]["name"]} -> #{action.data["listAfter"]["name"]}"
+		card_id = action.data["card"]["id"]
+		if actions[card_id].nil?
+			actions[card_id] = Array.new
+		end
+		actions[card_id] << action.date
 	end
 end
+
+puts actions.inspect
