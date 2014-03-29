@@ -25,4 +25,25 @@ board.actions.reverse_each do |action|
 	end
 end
 
-puts actions.inspect
+current_time = Time.new
+
+actions.each do |key,value|
+
+	tmp_datetime = nil
+	total = 0
+
+	value.each_with_index do |datetime,index|
+		if tmp_datetime.present?
+			total += ((datetime - tmp_datetime) / 1.day)
+		end
+		tmp_datetime = datetime
+		@i = index
+	end
+
+	if (@i % 2) == 0
+		total += ((current_time - tmp_datetime) / 1.day)
+	end
+
+	puts "id: #{key} - Total working time: #{total}"
+	
+end
