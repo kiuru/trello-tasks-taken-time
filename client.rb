@@ -7,21 +7,23 @@ Trello.configure do |config|
   config.member_token = TRELLO_MEMBER_TOKEN
 end
 
-member = Trello::Member.find(MEMBER_NAME)
-puts "#{member.full_name}"
-puts "Bio: #{member.bio}"
+#member = Trello::Member.find(MEMBER_NAME)
+#puts "#{member.full_name}"
+#puts "Bio: #{member.bio}"
 
 board = Trello::Board.find(BOARD_ID)
 
 actions = Hash.new
 
 board.actions.reverse_each do |action|
-	if action.type == "updateCard" && action.data["listAfter"].present? && (action.data["listBefore"]["name"] == "Doing" || action.data["listAfter"]["name"] == "Doing")
+	if (action.type == "updateCard" && action.data["listAfter"].present? && (action.data["listBefore"]["name"] == "Doing" || action.data["listAfter"]["name"] == "Doing")) || (action.type == "createCard" && action.data["list"]["name"] == "Doing")
 		card_id = action.data["card"]["id"]
 		if actions[card_id].nil?
-			actions[card_id] = Array.new
+			actions[card_id] = Hash.new
+			actions[card_id]["datetimes"] = Array.new
 		end
-		actions[card_id] << action.date
+		actions[card_id]["datetimes"] << action.date
+		actions[card_id]["name"] = action.data["card"]["name"]
 	end
 end
 
@@ -32,18 +34,18 @@ actions.each do |key,value|
 	tmp_datetime = nil
 	total = 0
 
-	value.each_with_index do |datetime,index|
+	value["datetimes"].each_with_index do |datetime,index|
 		if tmp_datetime.present?
-			total += ((datetime - tmp_datetime) / 1.day)
+			total += ((datetime - tmp_datetime) / 1.hour)
 		end
 		tmp_datetime = datetime
 		@i = index
 	end
 
 	if (@i % 2) == 0
-		total += ((current_time - tmp_datetime) / 1.day)
+		total += ((current_time - tmp_datetime) / 1.hour)
 	end
 
-	puts "id: #{key} - Total working time: #{total}"
+	puts "id: #{key}, name: #{value["name"]} - Total working time: #{total * 60} min(s)"
 	
 end
